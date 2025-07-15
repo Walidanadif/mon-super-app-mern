@@ -3,9 +3,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-// Import the auth routes
 const authRoutes = require('./routes/authRoutes');
-const privateRoutes = require('./routes/privateRoute'); // Vérifie bien le nom du fichier : privateRoute.js ?
+const privateRoutes = require('./routes/privateRoute');
+const dataRoutes = require('./routes/dataRoutes'); // Importez les nouvelles routes de données
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,16 +23,19 @@ mongoose.connect(MONGO_URI, {
 .then(() => console.log('MongoDB connected successfully!'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Use authentication routes
-app.use('/api/auth', authRoutes);
-
-// Use private routes - protected by auth middleware
-app.use('/api/private', privateRoutes);
-
 // Basic route (keep for testing)
 app.get('/', (req, res) => {
     res.send('E-commerce Dashboard Backend is running!');
 });
+
+// Use the authentication routes
+app.use('/api/auth', authRoutes);
+
+// Use private routes
+app.use('/api/private', privateRoutes);
+
+// Utilisez les routes de données
+app.use('/api/data', dataRoutes); // Toutes les routes dans dataRoutes seront préfixées par /api/data
 
 // Start the server
 app.listen(PORT, () => {
