@@ -1,0 +1,45 @@
+.product-list {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.product-list h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.product-list table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-list th,
+.product-list td {
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.product-list thead {
+  background-color: #f4f4f4;
+}
+
+.product-list tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.product-list tr:hover {
+  background-color: #f1f1f1;
+}
+
+.product-list th {
+  color: #444;
+  border-bottom: 2px solid #ddd;
+}
+
+.product-list td {
+  border-bottom: 1px solid #eee;
+}

@@ -1,0 +1,11 @@
+/* Basic Reset */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f7f6;
+}
+
+.dashboard-container {
+  display: flex; /* Use flexbox for layout */
+  min-height: 100vh; /* Make sure it takes full viewport height */
+}

@@ -1,0 +1,7 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif; /* Or whatever font you prefer */
+  /* Remove any specific Tailwind related styles like bg-gray-100 here */
+}
+
+/* Keep any global CSS you had before */
