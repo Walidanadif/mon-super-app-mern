@@ -1,73 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Import useAuth hook
-import './PrivateDashboard.css';
+// frontend/src/pages/PrivateDashboard.js
 
-function PrivateDashboard() {
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Make sure Axios is imported
+
+const PrivateDashboard = () => {
   const [privateData, setPrivateData] = useState('');
-  const [loadingContent, setLoadingContent] = useState(true); // Renamed to avoid confusion with auth loading
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-  const { user, token, isAuthenticated, logout, loading: authLoading } = useAuth(); // Get user, token, isAuthenticated, logout, and authLoading from context
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchPrivateData = async () => {
-      // If authentication check is still loading, wait
-      if (authLoading) return;
+      // 1. Get the token from localStorage
+      const token = localStorage.getItem('authToken'); // Assuming you store your token under 'authToken'
 
-      // If not authenticated, redirect to login
-      if (!isAuthenticated) {
-        navigate('/login');
+      // Check if token exists
+      if (!token) {
+        setError('No authentication token found. Please log in.');
+        setLoading(false);
         return;
       }
 
       try {
+        // 2. Configure Axios to send the token in the Authorization header
         const config = {
           headers: {
-            'x-auth-token': token, // Use token from context
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // <-- This is crucial!
           },
         };
-        const res = await axios.get('http://localhost:5000/api/private', config);
-        setPrivateData(res.data.msg);
-        setLoadingContent(false);
+
+        // 3. Make the request with the configured headers
+        const { data } = await axios.get('/api/private', config); // Adjust API_URL if needed
+        setPrivateData(data.message);
+        setLoading(false);
       } catch (err) {
-        console.error('Error fetching private data:', err.response ? err.response.data : err.message);
-        setError(err.response?.data?.msg || 'Failed to fetch private data. Please log in.');
-        setLoadingContent(false);
-        // If token is invalid or expired, use the logout function from context
-        if (err.response && err.response.status === 401) {
-            logout(); // Clear token and redirect
-        }
+        console.error("Erreur lors de la récupération des données privées:", err.response ? err.response.data : err.message);
+        setError(err.response && err.response.data && err.response.data.msg
+            ? err.response.data.msg
+            : 'Échec de la récupération des données privées.');
+        setLoading(false);
       }
     };
 
     fetchPrivateData();
-  }, [isAuthenticated, token, logout, navigate, authLoading]); // Dependencies
+  }, []); // Empty dependency array means this runs once on component mount
 
-  if (authLoading || loadingContent) {
-    return <div className="private-dashboard">Loading dashboard content...</div>;
+  if (loading) {
+    return <div>Chargement des données privées...</div>;
   }
 
   return (
     <div className="private-dashboard">
-      <h2>Your Secure Dashboard Area</h2>
+      <h2>Tableau de Bord Privé</h2>
       {error ? (
-        <div className="alert alert-danger">{error}</div>
+        <p className="error-message">{error}</p>
       ) : (
-        <div className="private-data-display">
-          <p>{privateData}</p>
-          {user && ( // Only display user info if user object exists
-            <>
-              <p>You are logged in as: **{user.username}**</p>
-              <p>Your role: **{user.role}**</p>
-            </>
-          )}
-        </div>
+        <p>{privateData}</p>
       )}
-      <button onClick={logout} className="btn-primary logout-btn">Logout</button>
+      <p>Ceci est une page qui devrait être accessible uniquement aux utilisateurs authentifiés.</p>
+      {/* You might want to add a logout button here */}
     </div>
   );
-}
+};
 
 export default PrivateDashboard;

@@ -21,11 +21,13 @@ const keyframes = `
 
 function Spinner() {
   return (
-    <>
-      {/* Injecte les keyframes si elles ne sont pas déjà globales */}
-      <style>{keyframes}</style>
-      <div style={spinnerStyle}></div>
-    </>
+    <div className="flex justify-center items-center">
+      {/* Le spinner lui-même */}
+      <div
+        className="w-16 h-16 border-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin"
+        style={{ borderTopColor: '#3498db' }} // Une couleur légèrement différente pour l'anneau en mouvement
+      ></div>
+    </div>
   );
 }
 

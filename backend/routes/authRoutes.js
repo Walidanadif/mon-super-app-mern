@@ -3,6 +3,15 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User'); // Import our User model
+const { protect } = require('../middleware/authMiddleware'); // Import the protect middleware
+
+
+// @route   GET /api/private
+// @desc    Get private data (protected route example)
+// @access  Private
+router.get('/private', protect, (req, res) => {
+  res.json({ message: `Bienvenue, ${req.user.name}! Vous avez accédé aux données privées.` });
+});
 
 // @route   POST /api/auth/register
 // @desc    Register a new user

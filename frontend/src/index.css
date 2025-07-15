@@ -1,7 +1,31 @@
+/* Import de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* Supprimez ces lignes : */
+/* @tailwind base; */
+/* @tailwind components; */
+/* @tailwind utilities; */
+
+/* Styles de base pour le corps et la typographie (gardez-les) */
 body {
-  margin: 0;
-  font-family: Arial, sans-serif; /* Or whatever font you prefer */
-  /* Remove any specific Tailwind related styles like bg-gray-100 here */
+  font-family: 'Inter', sans-serif;
+  color: #333;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0; /* Assurez-vous que la marge par défaut du body est supprimée */
 }
 
-/* Keep any global CSS you had before */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Roboto', sans-serif;
+  color: #222;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+/* Animation du spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

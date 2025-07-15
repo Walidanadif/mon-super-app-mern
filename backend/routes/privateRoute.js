@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/authMiddleware'); // Import our authentication middleware
 
-// @route   GET /api/private
-// @desc    Get data accessible only to authenticated users
-// @access  Private
-router.get('/', auth, (req, res) => {
-    // If we reach here, the user is authenticated because `auth` middleware passed
+// Import correct du middleware protect
+const { protect } = require('../middleware/authMiddleware');
+
+// Routes protégées avec le middleware `protect`
+router.get('/', protect, (req, res) => {
     res.json({
         msg: `Welcome, ${req.user.username || 'Authenticated User'}! This is private data.`,
         userId: req.user.id,
@@ -14,13 +13,11 @@ router.get('/', auth, (req, res) => {
     });
 });
 
-// You could also add role-based authorization here
-router.get('/admin-only', auth, (req, res) => {
+router.get('/admin-only', protect, (req, res) => {
     if (req.user.role !== 'admin') {
-        return res.status(403).json({ msg: 'Access denied. Admin required.' }); // 403 Forbidden
+        return res.status(403).json({ msg: 'Access denied. Admin required.' });
     }
     res.json({ msg: `Hello Admin ${req.user.username || ''}! This is admin-only data.` });
 });
-
 
 module.exports = router;

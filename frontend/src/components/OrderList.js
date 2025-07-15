@@ -1,72 +1,154 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
-import Spinner from './Spinner';
+// frontend/src/components/OrderList.js
 
-function OrderList() {
-  const { token, isAuthenticated } = useAuth();
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+
+const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (!isAuthenticated || !token) {
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        setError({ msg: 'Non autorisé, pas de token. Veuillez vous connecter.' });
         setLoading(false);
-        setError("Vous n'êtes pas authentifié pour voir les commandes.");
         return;
       }
 
-      try {
-        const config = {
-          headers: {
-            'x-auth-token': token,
-          },
-        };
-        const res = await axios.get('http://localhost:5000/api/data/orders', config);
-        setOrders(res.data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Erreur lors de la récupération des commandes:', err.response ? err.response.data : err.message);
-        setError(err.response?.data?.msg || 'Échec de la récupération des commandes.');
-        setLoading(false);
-      }
-    };
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        params: {
+          page,
+          limit,
+          search,
+          status,
+        },
+      };
 
+      const response = await axios.get('http://localhost:5000/api/orders', config);
+      setOrders(response.data.orders);
+      setTotalPages(response.data.totalPages);
+      setLoading(false);
+    } catch (err) {
+      console.error("Erreur lors de la récupération des commandes:", err.response ? err.response.data : err.message);
+      setError(err.response ? err.response.data : { msg: 'Une erreur est survenue lors du chargement des commandes.' });
+      setLoading(false);
+    }
+  }, [page, limit, search, status]);
+
+  useEffect(() => {
     fetchOrders();
-  }, [token, isAuthenticated]);
+  }, [fetchOrders]);
 
-  if (loading) return <div style={{ padding: '20px', textAlign: 'center', fontSize: '1.2em' }}><Spinner /></div>;
-  if (error) return <div style={{ padding: '20px', color: 'red', textAlign: 'center', fontSize: '1.2em' }}>Erreur: {error}</div>;
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
+  const handleStatusChange = (e) => {
+    setStatus(e.target.value);
+    setPage(1);
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(prevPage => prevPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(prevPage => prevPage - 1);
+    }
+  };
+
+  if (loading) return <div className="text-center py-4">Chargement des commandes...</div>;
+  if (error) return <div className="text-red-500 text-center py-4">Erreur: {error.msg || 'Impossible de charger les commandes.'}</div>;
 
   return (
-    <div style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
-      <h2 style={{ fontSize: '2em', marginBottom: '20px', color: '#333' }}>Liste des Commandes</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#f2f2f2' }}>
-            <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>ID Commande</th>
-            <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Client</th>
-            <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Date</th>
-            <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Total</th>
-            <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Statut</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map(order => (
-            <tr key={order.id}>
-              <td style={{ border: '1px solid #ddd', padding: '12px' }}>{order.id}</td>
-              <td style={{ border: '1px solid #ddd', padding: '12px' }}>{order.customer}</td>
-              <td style={{ border: '1px solid #ddd', padding: '12px' }}>{order.date}</td>
-              <td style={{ border: '1px solid #ddd', padding: '12px' }}>${order.total.toFixed(2)}</td>
-              <td style={{ border: '1px solid #ddd', padding: '12px' }}>{order.status}</td>
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4">Liste des Commandes</h2>
+      <div className="flex gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Rechercher des commandes..."
+          value={search}
+          onChange={handleSearchChange}
+          className="p-2 border rounded flex-grow"
+        />
+        <select
+          value={status}
+          onChange={handleStatusChange}
+          className="p-2 border rounded"
+        >
+          <option value="">Tous les statuts</option>
+          <option value="En attente">En attente</option>
+          <option value="Traité">Traité</option>
+          <option value="Livré">Livré</option>
+          <option value="Annulé">Annulé</option>
+        </select>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th className="py-2 px-4 border-b">ID Commande</th>
+              <th className="py-2 px-4 border-b">Client</th>
+              <th className="py-2 px-4 border-b">Total</th>
+              <th className="py-2 px-4 border-b">Statut</th>
+              <th className="py-2 px-4 border-b">Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {orders.length === 0 && <p style={{ textAlign: 'center', color: '#666' }}>Aucune commande trouvée.</p>}
+          </thead>
+          <tbody>
+            {orders.length > 0 ? (
+              orders.map(order => (
+                <tr key={order._id} className="hover:bg-gray-50">
+                  <td className="py-2 px-4 border-b">{order._id.substring(0, 8)}...</td>
+                  <td className="py-2 px-4 border-b">{order.user ? order.user.name : 'N/A'}</td>
+                  <td className="py-2 px-4 border-b">{order.totalAmount} DH</td>
+                  <td className="py-2 px-4 border-b">{order.status}</td>
+                  <td className="py-2 px-4 border-b">{new Date(order.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center py-4 text-gray-500">Aucune commande trouvée.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={handlePrevPage}
+          disabled={page === 1}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+        >
+          Précédent
+        </button>
+        <span>Page {page} sur {totalPages}</span>
+        <button
+          onClick={handleNextPage}
+          disabled={page === totalPages}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+        >
+          Suivant
+        </button>
+      </div>
     </div>
   );
-}
+};
 
 export default OrderList;

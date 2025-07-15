@@ -1,109 +1,112 @@
+// frontend/src/components/SalesChart.js
+
 import React, { useState, useEffect } from 'react';
-import { Bar } from 'react-chartjs-2';
+import axios from 'axios';
+import { Line } from 'react-chartjs-2'; // Assuming you're using react-chartjs-2
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js';
-import axios from 'axios';
-import { useAuth } from '../../context/AuthContext'; // Pour récupérer le token
-import Spinner from '../Spinner'; // Importez le Spinner
 
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  BarElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
   Legend
 );
 
-function SalesChart() {
-  const { token, isAuthenticated } = useAuth(); // Récupérer le token du contexte
-  const [chartData, setChartData] = useState({
+const SalesChart = () => {
+  const [salesData, setSalesData] = useState({
     labels: [],
-    datasets: [{
-      label: 'Ventes Mensuelles ($)',
-      data: [],
-      backgroundColor: 'rgba(75, 192, 192, 0.6)',
-      borderColor: 'rgba(75, 192, 192, 1)',
-      borderWidth: 1,
-    }],
+    datasets: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchSalesData = async () => {
-      if (!isAuthenticated || !token) {
-        setLoading(false);
-        setError("Vous n'êtes pas authentifié pour voir les données de ventes.");
-        return;
-      }
-
       try {
+        const token = localStorage.getItem('token'); // Retrieve the token
+
+        if (!token) {
+          setError({ msg: 'Non autorisé, pas de token. Veuillez vous connecter.' });
+          setLoading(false);
+          return;
+        }
+
         const config = {
           headers: {
-            'x-auth-token': token, // Envoyer le token dans l'en-tête
-          },
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // Attach the JWT to the Authorization header
+          }
         };
-        const res = await axios.get('http://localhost:5000/api/data/sales', config);
-        const dataFromBackend = res.data;
 
-        setChartData({
-          labels: dataFromBackend.map(item => item.month),
-          datasets: [{
-            label: 'Ventes Mensuelles ($)',
-            data: dataFromBackend.map(item => item.sales),
-            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1,
-          }],
+        const response = await axios.get('http://localhost:5000/api/data/sales', config);
+
+        // Assuming your backend sends data like [{ month: 'Jan', sales: 1200 }, ...]
+        const labels = response.data.map(item => item.month);
+        const data = response.data.map(item => item.sales);
+
+        setSalesData({
+          labels: labels,
+          datasets: [
+            {
+              label: 'Ventes Mensuelles',
+              data: data,
+              borderColor: 'rgba(75, 192, 192, 1)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              fill: true,
+              tension: 0.1,
+            },
+          ],
         });
         setLoading(false);
       } catch (err) {
-        console.error('Erreur lors de la récupération des données de ventes:', err.response ? err.response.data : err.message);
-        setError(err.response?.data?.msg || 'Échec de la récupération des données de ventes.');
+        console.error("Erreur lors de la récupération des données de ventes:", err.response ? err.response.data : err.message);
+        setError(err.response ? err.response.data : { msg: 'Une erreur est survenue lors du chargement des données de ventes.' });
         setLoading(false);
       }
     };
 
     fetchSalesData();
-  }, [token, isAuthenticated]); // Dépendances: refetch quand le token ou l'état d'authentification change
+  }, []);
+
+  if (loading) return <div className="text-center py-4">Chargement des données de ventes...</div>;
+  if (error) return <div className="text-red-500 text-center py-4">Erreur: {error.msg || 'Impossible de charger les données de ventes.'}</div>;
 
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
+      legend: {
+        position: 'top',
+      },
       title: {
         display: true,
-        text: 'Tendances des Ventes Mensuelles',
-        font: { size: 18, weight: 'bold' },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: { display: true, text: 'Montant des Ventes ($)' },
-      },
-      x: {
-        title: { display: true, text: 'Mois' },
+        text: 'Performance des Ventes',
       },
     },
   };
 
-  if (loading) return <div style={{ padding: '20px', textAlign: 'center' }}><Spinner /></div>;
-  if (error) return <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>Erreur: {error}</div>;
-
   return (
-    <div style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
-      <Bar data={chartData} options={options} />
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold mb-4">Graphique des Ventes</h3>
+      {salesData.labels.length > 0 ? (
+        <Line data={salesData} options={options} />
+      ) : (
+        <p className="text-center text-gray-500">Aucune donnée de ventes disponible.</p>
+      )}
     </div>
   );
-}
+};
 
 export default SalesChart;

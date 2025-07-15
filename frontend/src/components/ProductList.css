@@ -1,45 +1,188 @@
-.product-list {
-  padding: 2rem;
-  max-width: 1000px;
-  margin: auto;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Conteneur principal de la page de liste */
+.list-page-container {
+  background-color: #ffffff; /* bg-white */
+  padding: 24px; /* p-6 */
+  border-radius: 12px; /* rounded-xl */
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05); /* shadow-lg */
+  border: 1px solid #e2e8f0; /* border border-gray-200 */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.product-list h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #333;
+.list-title {
+  font-size: 28px; /* text-3xl */
+  font-weight: 700; /* font-bold */
+  color: #1a202c; /* text-gray-800 */
+  margin-bottom: 24px; /* mb-6 */
 }
 
-.product-list table {
+/* Tableau de données */
+.data-table-container {
+  overflow-x: auto; /* Permet le défilement horizontal sur les petits écrans */
+  margin-bottom: 20px;
+}
+
+.data-table {
   width: 100%;
-  border-collapse: collapse;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-collapse: collapse; /* supprime l'espace entre les cellules */
+  border-radius: 8px; /* rounded-lg */
+  overflow: hidden; /* important pour que les coins arrondis fonctionnent avec border-collapse */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* ombre légère */
+  border: 1px solid #e2e8f0; /* bordure globale du tableau */
+  font-size: 14px;
 }
 
-.product-list th,
-.product-list td {
-  padding: 12px 16px;
-  text-align: left;
+.data-table thead {
+  background-color: #edf2f7; /* bg-gray-50 */
 }
 
-.product-list thead {
-  background-color: #f4f4f4;
+.data-table th {
+  padding: 12px 24px; /* px-6 py-3 */
+  text-align: left; /* text-left */
+  font-size: 12px; /* text-xs */
+  font-weight: 500; /* font-medium */
+  color: #4a5568; /* text-gray-500 */
+  text-transform: uppercase; /* uppercase */
+  letter-spacing: 0.05em; /* tracking-wider */
+  border-bottom: 1px solid #e2e8f0; /* divide-y divide-gray-200 */
+  border-right: 1px solid #e2e8f0; /* pour les séparateurs verticaux */
+}
+.data-table th:last-child {
+    border-right: none; /* Pas de bordure à droite pour la dernière colonne */
 }
 
-.product-list tr:nth-child(even) {
-  background-color: #fafafa;
+
+.data-table tbody {
+  background-color: #ffffff; /* bg-white */
 }
 
-.product-list tr:hover {
-  background-color: #f1f1f1;
+.data-table td {
+  padding: 16px 24px; /* px-6 py-4 */
+  white-space: nowrap; /* whitespace-nowrap */
+  font-size: 14px; /* text-sm */
+  color: #1a202c; /* text-gray-900 */
+  border-bottom: 1px solid #e2e8f0; /* divide-y divide-gray-200 */
+  border-right: 1px solid #e2e8f0; /* pour les séparateurs verticaux */
+}
+.data-table td:last-child {
+    border-right: none;
 }
 
-.product-list th {
-  color: #444;
-  border-bottom: 2px solid #ddd;
+/* Dernières lignes et cellules sans bordure inférieure */
+.data-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
-.product-list td {
-  border-bottom: 1px solid #eee;
+
+/* Styles pour le mode sombre pour les tableaux */
+body.dark-mode .data-table {
+  border-color: #444;
+  box-shadow: none;
+}
+
+body.dark-mode .data-table thead {
+  background-color: #3a475d; /* dark:bg-gray-600 */
+}
+
+body.dark-mode .data-table th {
+  color: #cbd5e0; /* dark:text-gray-200 */
+  border-color: #444;
+}
+
+body.dark-mode .data-table tbody {
+  background-color: #2d3748; /* dark:bg-gray-700 */
+}
+
+body.dark-mode .data-table td {
+  color: #f7fafc; /* dark:text-gray-100 */
+  border-color: #444;
+}
+/* Section de recherche et de filtrage */
+.filter-controls {
+  display: flex;
+  gap: 16px; /* Espace entre les éléments */
+  margin-bottom: 24px; /* mb-6 */
+  flex-wrap: wrap; /* Permet aux éléments de passer à la ligne sur les petits écrans */
+}
+
+.search-input,
+.category-select {
+  flex: 1; /* Permet aux champs de prendre de la place */
+  min-width: 200px; /* Largeur minimale pour les champs */
+  padding: 10px 14px;
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  border-radius: 6px; /* rounded-md */
+  font-size: 16px; /* text-base */
+  color: #374151; /* text-gray-700 */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: #ffffff; /* bg-white */
+  outline: none;
+}
+
+.search-input:focus,
+.category-select:focus {
+  border-color: #3b82f6; /* focus:border-blue-500 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* focus:ring-blue-500 */
+}
+
+/* Contrôles de pagination */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px; /* mt-6 */
+  gap: 16px; /* space-x-4 */
+}
+
+.pagination-button {
+  background-color: #4f46e5; /* bg-indigo-600 */
+  color: #ffffff; /* text-white */
+  padding: 10px 20px;
+  border-radius: 8px; /* rounded-lg */
+  font-weight: 600; /* font-semibold */
+  transition: background-color 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: #4338ca; /* hover:bg-indigo-700 */
+}
+
+.pagination-button:disabled {
+  background-color: #a5b4fc; /* bg-indigo-300 */
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.pagination-info {
+  font-size: 16px; /* text-base */
+  color: #4a5568; /* text-gray-700 */
+  font-weight: 500;
+}
+
+/* Styles pour le mode sombre */
+body.dark-mode .search-input,
+body.dark-mode .category-select {
+  background-color: #4a5568; /* bg-gray-700 */
+  color: #f7fafc; /* text-gray-100 */
+  border-color: #6a7488;
+}
+
+body.dark-mode .search-input::placeholder {
+  color: #a0aec0; /* Couleur du placeholder en mode sombre */
+}
+
+body.dark-mode .search-input:focus,
+body.dark-mode .category-select:focus {
+  border-color: #7dd3fc; /* focus:border-sky-300 */
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.25);
+}
+
+body.dark-mode .pagination-button:disabled {
+  background-color: #4f46e5; /* La même couleur que l'actif, mais avec opacité */
+  opacity: 0.4;
+}
+
+body.dark-mode .pagination-info {
+  color: #e0e0e0; /* Texte clair en mode sombre */
 }
