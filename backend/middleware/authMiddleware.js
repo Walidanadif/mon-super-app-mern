@@ -5,29 +5,34 @@ const User = require('../models/User');
 
 const protect = async (req, res, next) => {
   let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select('-password');
 
-      // --- CRITICAL CHECK: Line 26 ---
-      if (!req.user) { // If user was deleted or ID doesn't exist
+  try {
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      token = req.headers.authorization.split(' ')[1];
+      console.log('TOKEN:', token); // log after it's set
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('DECODED:', decoded); // only log after it's declared
+
+      req.user = await User.findById(decoded.user.id).select('-password'); // or decoded.id depending on how it's structured
+      console.log('USER:', req.user);
+
+      if (!req.user) {
         res.status(401);
         throw new Error('Not authorized, user not found');
       }
-      next();
-    } catch (error) {
-      console.error(error); // Log the actual error for debugging
-      res.status(401);
-      // --- CRITICAL CHECK: Line 33 ---
-      throw new Error('Not authorized, token failed'); // Catches expired, malformed, or wrong secret tokens
-    }
-  }
 
-  if (!token) { // If no token was provided at all
-    res.status(401);
-    throw new Error('Not authorized, no token');
+      next();
+    } else {
+      res.status(401);
+      throw new Error('Not authorized, no token');
+    }
+  } catch (error) {
+    console.error('AUTH ERROR:', error.message);
+    res.status(401).json({ message: 'Not authorized, token failed' });
   }
 };
 
